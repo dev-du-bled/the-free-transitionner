@@ -53,7 +53,7 @@
     />
   </div>
   <div class="ui-area">
-    <h1>Liberation Rogue</h1>
+    <h1>The Free Software Transitionner</h1>
     <div class="stats">
       <h2>Global Stats</h2>
       <p>GAFAM Market Share: <span class="market-share">{$gameStore.gafamMarketShare.toFixed(2)}%</span></p>
