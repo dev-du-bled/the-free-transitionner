@@ -241,6 +241,12 @@
       top: 2px;
   }
 
+  .upgrades {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+  }
+
   .upgrade {
     background-color: #4e342e;
     padding: 1rem;
