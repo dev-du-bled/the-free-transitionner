@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import Map from '$lib/components/Map.svelte';
   import MissionView from '$lib/components/MissionView.svelte';
-  import { gameStore } from '$lib/stores/gameStore';
+  import { gameStore, countryCoverage, visibleInstitutions } from '$lib/stores/gameStore';
   import type { Institution } from '$lib/game/institutions';
   import { permanentUpgrades as allUpgrades } from '$lib/game/upgrades';
 
@@ -10,6 +10,7 @@
   
   let missionInterval: any;
   let incomeInterval: any;
+  let spreadInterval: any;
 
   onMount(() => {
       missionInterval = setInterval(() => {
@@ -19,16 +20,21 @@
       incomeInterval = setInterval(() => {
           gameStore.collectPassiveIncome();
       }, 1000);
+
+      spreadInterval = setInterval(() => {
+          gameStore.spreadLiberation();
+      }, 1000);
   })
 
   onDestroy(() => {
       clearInterval(missionInterval);
       clearInterval(incomeInterval);
+      clearInterval(spreadInterval);
   })
 
   function handleInstitutionSelected(event: CustomEvent<Institution>) {
     const institutionId = event.detail.id;
-    selectedInstitution = $gameStore.institutions.find(i => i.id === institutionId) || null;
+    selectedInstitution = $visibleInstitutions.find(i => i.id === institutionId) || null;
   }
 
   function startMission() {
@@ -44,9 +50,15 @@
 
 <div class="game-container">
   <div class="map-area">
-    <Map institutions={$gameStore.institutions} on:institution_selected={handleInstitutionSelected} />
+    <Map institutions={$visibleInstitutions} on:institution_selected={handleInstitutionSelected} />
   </div>
   <div class="ui-area">
+    <div class="country-coverage">
+      <h2>Country Liberation</h2>
+      <progress class="coverage-progress" value={$countryCoverage} max="100"></progress>
+      <p>{$countryCoverage.toFixed(1)}% Complete</p>
+    </div>
+
     <h1>Liberation Rogue</h1>
     <div class="stats">
       <h2>Global Stats</h2>
@@ -139,6 +151,23 @@
 
   .market-share, .liberated-count, .money {
     font-weight: bold;
+  }
+  
+  .country-coverage {
+    background-color: #fafafa;
+    padding: 1rem;
+    border-radius: 5px;
+    border: 1px solid #eee;
+  }
+
+  .country-coverage p {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 0.5rem;
+  }
+
+  .coverage-progress {
+      width: 100%;
   }
 
   button {

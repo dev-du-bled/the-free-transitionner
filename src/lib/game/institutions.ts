@@ -5,6 +5,7 @@ export interface Institution {
   lng: number;
   dependency: number; // 0-100, how dependent on GAFAMs
   liberated: boolean;
+  influenceRadius?: number; // In km, how far the liberation has spread
 }
 
 export const institutions: Institution[] = [

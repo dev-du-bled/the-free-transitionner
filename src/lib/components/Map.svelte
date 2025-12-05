@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount, createEventDispatcher, afterUpdate } from 'svelte';
   import 'leaflet/dist/leaflet.css';
-  import type { Map, Marker, Circle } from 'leaflet';
+  import type { Map, Marker } from 'leaflet';
   import type { Institution } from '$lib/game/institutions';
+  import { DotEmitter } from '$lib/effects/DotEmitter';
 
   export let institutions: Institution[] = [];
 
@@ -11,18 +12,65 @@
   let mapElement: HTMLElement;
   let map: Map;
   let markers: { [id: number]: Marker } = {};
-  let circles: { [id: number]: Circle } = {};
+  
+  // To keep track of running animations
+  const activeEmitters = new Set<number>();
 
   let L: any;
 
   onMount(async () => {
     if (typeof window !== 'undefined') {
       L = await import('leaflet');
-      map = L.map(mapElement).setView([46.2276, 2.2137], 6);
+      map = L.map(mapElement, {
+          preferCanvas: true,
+          zoomControl: false,
+          scrollWheelZoom: false,
+          doubleClickZoom: false,
+          touchZoom: false,
+          boxZoom: false,
+          keyboard: false,
+          dragging: false,
+          minZoom: 6, // Allow slightly lower for responsive layouts if needed, but keep max restrictive
+          maxZoom: 7
+      }).setView([46.6, 2.2137], 6.5); // slightly adjusted center and zoom
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
+
+      // --- France Mask ---
+      try {
+          const response = await fetch('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/metropole-version-simplifiee.geojson');
+          const data = await response.json();
+          
+          // Create a giant rectangle covering the world
+          const world = [
+              [90, -180],
+              [90, 180],
+              [-90, 180],
+              [-90, -180]
+          ];
+
+          // Extract France coordinates from MultiPolygon
+          // Structure: Feature -> geometry -> coordinates -> Array of Polygons -> Array of Rings -> Array of Points
+          const francePolygons = data.geometry.coordinates;
+          const franceHoles = francePolygons.map((polygon: any) => 
+              polygon[0].map((point: any) => [point[1], point[0]]) // Swap lon/lat to lat/lon
+          );
+
+          // Create the mask polygon: World is the outer shell, France parts are the holes
+          const maskWithHoles = [world, ...franceHoles];
+
+          L.polygon(maskWithHoles, {
+              color: 'transparent', // No border
+              fillColor: '#f0f0f0', // Match page background
+              fillOpacity: 1,
+              interactive: false // Let clicks pass through
+          }).addTo(map);
+
+      } catch (e) {
+          console.error("Failed to load France mask:", e);
+      }
 
       drawElements();
     }
@@ -54,15 +102,11 @@
             markers[institution.id] = marker;
         }
         
-        const existingCircle = circles[institution.id];
-        if (institution.liberated && !existingCircle) {
-            const circle = L.circle([institution.lat, institution.lng], {
-                radius: 20000, // 20km radius
-                color: 'blue',
-                fillColor: 'blue',
-                fillOpacity: 0.2
-            }).addTo(map);
-            circles[institution.id] = circle;
+        // --- Spreading Dots Animation ---
+        if (institution.liberated && !activeEmitters.has(institution.id)) {
+            const emitter = new DotEmitter(L, map, L.latLng(institution.lat, institution.lng));
+            emitter.start();
+            activeEmitters.add(institution.id);
         }
       });
   }

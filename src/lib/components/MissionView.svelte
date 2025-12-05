@@ -9,6 +9,16 @@
         <div class="progress" style="width: {$gameStore.activeMission.progress}%"></div>
     </div>
     <p style="text-align: center;">{Math.round($gameStore.activeMission.progress)}%</p>
+    
+    <div class="controls">
+        <button 
+            class="cancel-btn" 
+            on:click={() => gameStore.cancelMission()}
+            disabled={$gameStore.playerMoney < 20}
+        >
+            Cancel Mission ($20)
+        </button>
+    </div>
 
     {#if $gameStore.activeEvent}
         {@const event = $gameStore.activeEvent}
@@ -44,6 +54,30 @@
         height: 100%;
         background-color: #4caf50;
         transition: width 0.3s ease-in-out;
+    }
+    .controls {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    .cancel-btn {
+        background-color: #fff;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background-color 0.2s;
+    }
+    .cancel-btn:hover:not(:disabled) {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    .cancel-btn:disabled {
+        border-color: #ccc;
+        color: #ccc;
+        cursor: not-allowed;
     }
     .events {
         margin-top: 1rem;
