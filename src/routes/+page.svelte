@@ -37,6 +37,11 @@
   function purchaseUpgrade(upgradeId: string) {
       gameStore.purchaseUpgrade(upgradeId);
   }
+
+  $: unpurchasedIndex = allUpgrades.findIndex(u => !$gameStore.permanentUpgrades.some(p => p.id === u.id));
+  $: visibleCount = unpurchasedIndex === -1 ? allUpgrades.length : unpurchasedIndex + 1;
+  $: visibleUpgrades = allUpgrades.slice(0, visibleCount);
+  $: showSkeleton = visibleCount < allUpgrades.length;
 </script>
 
 <div class="game-container">
@@ -72,7 +77,8 @@
 
     <div class="upgrades">
       <h2>Permanent Upgrades</h2>
-      {#each allUpgrades as upgrade}
+      
+      {#each visibleUpgrades as upgrade}
         <div class="upgrade">
             <h3>{upgrade.name} (${upgrade.cost})</h3>
             <p>{upgrade.description}</p>
@@ -85,6 +91,13 @@
             </button>
         </div>
       {/each}
+
+      {#if showSkeleton}
+        <div class="upgrade skeleton">
+            <h3>???</h3>
+            <p>Unlock the previous upgrade to reveal this one.</p>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
@@ -261,6 +274,18 @@
       font-style: italic;
       opacity: 0.7;
       margin-top: 0.25rem;
+  }
+
+  .upgrade.skeleton {
+      opacity: 0.5;
+      border-style: dashed;
+      text-align: center;
+      color: #a1887f;
+  }
+  
+  .upgrade.skeleton h3 {
+      color: #a1887f;
+      border-bottom: none;
   }
   
   .actions {
