@@ -211,7 +211,7 @@ function createGameStore() {
                       if (source.liberated && source.influenceRadius) {
                           const dist = getDistance(source.lat, source.lng, target.lat, target.lng);
                           if (dist < source.influenceRadius) {
-                              totalReduction += 0.15; // Faster burn reduction
+                              totalReduction += 0.01; // drastically slower burn reduction
                           }
                       }
                   });
