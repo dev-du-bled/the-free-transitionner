@@ -87,12 +87,62 @@ function createGameStore() {
             { text: 'Run an express workshop ($50)', action: () => resolveEvent(-50, 15) },
             { text: 'Use online docs (no cost)', action: () => resolveEvent(0, 5) },
         ]
+    },
+    {
+        id: 'vendor-lockin',
+        title: 'Vendor Lock-in Discovered',
+        description: 'An active long-term contract with a proprietary vendor (e.g., Microsoft 365) was found.',
+        choices: [
+            { text: 'Pay early termination penalty ($200)', action: () => resolveEvent(-200, 25) },
+            { text: 'Negotiate exit (slower progress)', action: () => resolveEvent(0, -10) },
+        ]
+    },
+    {
+        id: 'proprietary-trainers',
+        title: 'Trainers Lack Certification',
+        description: 'The internal trainers are only certified for proprietary software.',
+        choices: [
+            { text: 'Retrain existing staff ($100)', action: () => resolveEvent(-100, 15) },
+            { text: 'Hire external open-source experts ($150)', action: () => resolveEvent(-150, 30) },
+        ]
+    },
+    {
+        id: 'resistant-users',
+        title: 'User Resistance',
+        description: 'Users are pushing back: "I\'ve always done it this way!"',
+        choices: [
+            { text: 'Host an engagement workshop ($50)', action: () => resolveEvent(-50, 10) },
+            { text: 'Force the change (+15% risk)', action: () => resolveEvent(0, 5, 15) },
+        ]
+    },
+    {
+        id: 'budget-cut',
+        title: 'Unexpected Budget Cut',
+        description: 'The institution has slashed the transition budget mid-way.',
+        choices: [
+            { text: 'Cover costs from own funds ($100)', action: () => resolveEvent(-100, 10) },
+            { text: 'Attempt crowdfunding (+25% risk)', action: () => resolveEvent(0, 20, 25) },
+        ]
+    },
+    {
+        id: 'software-incompatibility',
+        title: 'Software Incompatibility',
+        description: 'Critical business software has no Linux-native alternative.',
+        choices: [
+            { text: 'Sponsor open-source alternative ($300)', action: () => resolveEvent(-300, 40) },
+            { text: 'Use Wine/Compatibility layer (slower)', action: () => resolveEvent(0, 5) },
+        ]
     }
   ];
   
   function resolveEvent(moneyChange: number, progressChange: number, riskChange: number = 0) {
       update(state => {
           if (!state.activeEvent) return state;
+
+          // Legal Aid: reduce monetary penalties
+          if (moneyChange < 0 && state.permanentUpgrades.some(u => u.id === 'legal-aid')) {
+              moneyChange = moneyChange / 2;
+          }
 
           const riskRoll = Math.random() * 100;
           if (riskRoll < riskChange) {
@@ -162,6 +212,10 @@ function createGameStore() {
           let progressIncrease = baseSpeed;
           if (state.permanentUpgrades.some(u => u.id === 'script-install')) {
             progressIncrease *= 1.5;
+          }
+          // Build Servers Upgrade
+          if (state.permanentUpgrades.some(u => u.id === 'build-servers')) {
+            progressIncrease *= 1.2;
           }
 
           const newProgress = state.activeMission.progress + progressIncrease;
@@ -249,6 +303,14 @@ function createGameStore() {
               });
               newState.institutions = [...newState.institutions];
           }
+          if (upgrade.id === 'awareness-campaign') {
+              newState.institutions.forEach(inst => {
+                  if (!inst.liberated) {
+                      inst.dependency = Math.max(0, inst.dependency - 10);
+                  }
+              });
+              newState.institutions = [...newState.institutions];
+          }
 
           return newState;
       });
@@ -256,13 +318,21 @@ function createGameStore() {
 
   function collectPassiveIncome() {
       update(state => {
-          if (!state.permanentUpgrades.some(u => u.id === 'open-source-contribution')) {
-              return state;
+          let income = 0;
+          if (state.permanentUpgrades.some(u => u.id === 'open-source-contribution')) {
+              income += 10;
           }
-          return {
-              ...state,
-              playerMoney: state.playerMoney + 10,
+          if (state.permanentUpgrades.some(u => u.id === 'policy-lobbying')) {
+              income += 20;
           }
+          
+          if (income > 0) {
+              return {
+                  ...state,
+                  playerMoney: state.playerMoney + income,
+              }
+          }
+          return state;
       });
   }
 
