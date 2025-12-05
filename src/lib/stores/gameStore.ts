@@ -136,9 +136,9 @@ function createGameStore() {
 
           // --- 1. Event Triggering ---
           // Event chance scales with dependency.
-          // Min chance: 5% (at 0 dependency)
-          // Max chance: 25% (at 100 dependency)
-          const eventChance = 0.05 + (targetInstitution.dependency / 100) * 0.2;
+          // Min chance: 1% (at 0 dependency)
+          // Max chance: 6% (at 100 dependency)
+          const eventChance = 0.01 + (targetInstitution.dependency / 100) * 0.05;
           
           if (Math.random() < eventChance) {
               let availableEvents = [...missionEvents];

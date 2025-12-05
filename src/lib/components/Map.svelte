@@ -6,6 +6,7 @@
   import { DotEmitter } from '$lib/effects/DotEmitter';
 
   export let institutions: Institution[] = [];
+  export let isMissionActive: boolean = false;
 
   const dispatch = createEventDispatcher();
 
@@ -37,6 +38,10 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
+
+      // Create a custom pane for dots to sit below the mask
+      map.createPane('dotsPane');
+      map.getPane('dotsPane').style.zIndex = 350;
 
       // --- France Mask ---
       try {
@@ -72,6 +77,18 @@
           console.error("Failed to load France mask:", e);
       }
 
+      // Handle popup button clicks
+      map.on('popupopen', (e: any) => {
+          const button = e.popup._contentNode.querySelector('.start-mission-btn');
+          if (button) {
+              button.addEventListener('click', () => {
+                  const id = parseInt(button.getAttribute('data-id'));
+                  dispatch('start_mission', id);
+                  map.closePopup();
+              });
+          }
+      });
+
       drawElements();
     }
   });
@@ -87,24 +104,38 @@
         const existingMarker = markers[institution.id];
         const icon = getIcon(institution);
 
-        const popupContent = `<b>${institution.name}</b><br>Dependency: ${institution.dependency.toFixed(1)}%`;
+        let popupContent = `
+            <div class="map-popup">
+                <h3>${institution.name}</h3>
+                <p>Dependency: <strong>${institution.dependency.toFixed(1)}%</strong></p>
+        `;
+
+        if (!institution.liberated) {
+            const disabledAttr = isMissionActive ? 'disabled' : '';
+            popupContent += `<button class="start-mission-btn" data-id="${institution.id}" ${disabledAttr}>Start Mission</button>`;
+        } else {
+            popupContent += `<p class="liberated-text">Liberated!</p>`;
+        }
+        popupContent += `</div>`;
 
         if (existingMarker) {
             existingMarker.setIcon(icon);
-            existingMarker.unbindPopup();
-            existingMarker.bindPopup(popupContent);
+            // Only update popup content if it's not currently open to avoid flickering/closing
+            if (!existingMarker.isPopupOpen()) {
+                existingMarker.bindPopup(popupContent);
+            }
         } else {
             const marker = L.marker([institution.lat, institution.lng], { icon }).addTo(map);
             marker.bindPopup(popupContent);
-            marker.on('click', () => {
-              dispatch('institution_selected', institution);
-            });
+            // We don't need the click event to dispatch 'institution_selected' anymore if the interaction is in the popup
+            // but keeping it for centering or other effects might be useful.
+            // marker.on('click', () => { dispatch('institution_selected', institution); }); 
             markers[institution.id] = marker;
         }
         
         // --- Spreading Dots Animation ---
         if (institution.liberated && !activeEmitters.has(institution.id)) {
-            const emitter = new DotEmitter(L, map, L.latLng(institution.lat, institution.lng));
+            const emitter = new DotEmitter(L, map, L.latLng(institution.lat, institution.lng), 2000000, 'dotsPane');
             emitter.start();
             activeEmitters.add(institution.id);
         }
@@ -150,5 +181,61 @@
       top: 50%;
       margin: -15px 0 0 -15px;
       box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  }
+
+  /* Leaflet Popup Theming */
+  :global(.leaflet-popup-content-wrapper), :global(.leaflet-popup-tip) {
+      background-color: #5d4037;
+      color: #ffe0b2;
+      border: 2px solid #3e2723;
+      border-radius: 4px;
+  }
+  
+  :global(.leaflet-popup-content) {
+      margin: 13px 19px;
+      line-height: 1.4;
+  }
+
+  :global(.map-popup h3) {
+      margin: 0 0 0.5rem 0;
+      color: #ffcc80;
+      border-bottom: 1px solid #8d6e63;
+      padding-bottom: 0.25rem;
+  }
+
+  :global(.start-mission-btn) {
+        width: 100%;
+        padding: 0.5rem;
+        border: 2px solid #3e2723;
+        background-color: #a1887f;
+        color: #2d1915;
+        cursor: pointer;
+        border-radius: 4px;
+        font-family: inherit;
+        font-weight: bold;
+        text-transform: uppercase;
+        box-shadow: 0 3px 0 #3e2723;
+        margin-top: 0.5rem;
+  }
+  :global(.start-mission-btn:hover:not(:disabled)) {
+      background-color: #bcaaa4;
+      box-shadow: 0 4px 0 #3e2723;
+  }
+  :global(.start-mission-btn:active:not(:disabled)) {
+      box-shadow: 0 1px 0 #3e2723;
+      transform: translateY(2px);
+  }
+  :global(.start-mission-btn:disabled) {
+      background-color: #6d4c41;
+      color: #4e342e;
+      border-color: #3e2723;
+      box-shadow: none;
+      cursor: not-allowed;
+  }
+
+  :global(.liberated-text) {
+      color: #66bb6a;
+      font-weight: bold;
+      text-align: center;
   }
 </style>
