@@ -3,20 +3,20 @@ export interface Institution {
   name: string;
   lat: number;
   lng: number;
-  dependency: number; // 0-100, how dependent on GAFAMs
+  dependency: number; 
   liberated: boolean;
-  influenceRadius?: number; // In km, how far the liberation has spread
+  influenceRadius?: number; 
 }
 
 export const institutions: Institution[] = [
-  // Existing
+  
   { id: 1, name: 'Mairie de Paris', lat: 48.8566, lng: 2.3522, dependency: 80, liberated: false },
   { id: 2, name: 'Université de Lille', lat: 50.6333, lng: 3.0667, dependency: 70, liberated: false },
   { id: 3, name: 'Lycée Thiers, Marseille', lat: 43.2965, lng: 5.378, dependency: 90, liberated: false },
   { id: 4, name: 'IUT de Bordeaux', lat: 44.8378, lng: -0.5792, dependency: 60, liberated: false },
   { id: 5, name: 'École Maternelle, Rennes', lat: 48.1173, lng: -1.6778, dependency: 50, liberated: false },
 
-  // Added
+  
   { id: 6, name: 'IUT de Nevers', lat: 46.996, lng: 3.170, dependency: 75, liberated: false },
   { id: 7, name: 'Université de Strasbourg', lat: 48.5839, lng: 7.7478, dependency: 65, liberated: false },
   { id: 8, name: 'Mairie de Lyon', lat: 45.7640, lng: 4.8357, dependency: 85, liberated: false },

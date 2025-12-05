@@ -1,4 +1,4 @@
-// src/lib/effects/DotEmitter.ts
+
 
 import type { Map, LatLng } from 'leaflet';
 
@@ -6,7 +6,7 @@ export class DotEmitter {
     private L: any;
     private map: Map;
     private center: LatLng;
-    private maxRadius: number; // in meters
+    private maxRadius: number; 
     private pane: string;
     
     private interval: any;
@@ -18,7 +18,7 @@ export class DotEmitter {
         this.map = map;
         this.center = center;
         this.maxRadius = maxRadius;
-        this.growthRate = 75; // Fixed growth rate
+        this.growthRate = 75; 
         this.pane = pane;
     }
 
@@ -31,7 +31,7 @@ export class DotEmitter {
 
             this.currentRadius += this.growthRate;
             
-            // Spawn dots
+            
             for (let i = 0; i < 3; i++) {
                 this.spawnDot();
             }
@@ -52,7 +52,7 @@ export class DotEmitter {
 
         const dotPosition = this.L.latLng(this.center.lat + latOffset, this.center.lng + lngOffset);
 
-        // Dots are permanent
+        
         this.L.circle(dotPosition, {
             radius: 30,
             color: '#007bff',
