@@ -112,7 +112,7 @@
 
         if (!institution.liberated) {
             const disabledAttr = isMissionActive ? 'disabled' : '';
-            popupContent += `<button class="start-mission-btn" data-id="${institution.id}" ${disabledAttr}>Start Mission</button>`;
+            popupContent += `<button class="start-mission-btn" data-id="${institution.id}" ${disabledAttr}>Start Transition</button>`;
         } else {
             popupContent += `<p class="liberated-text">Liberated!</p>`;
         }

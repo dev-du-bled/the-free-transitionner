@@ -41,7 +41,7 @@
 
 <div class="game-container">
   <div class="country-coverage">
-    <h2>Country Liberation: {$countryCoverage.toFixed(1)}%</h2>
+    <h2>Country Transition: {$countryCoverage.toFixed(1)}%</h2>
     <progress class="coverage-progress" value={$countryCoverage} max="100"></progress>
   </div>
 
@@ -66,7 +66,7 @@
     {:else}
       <div class="actions">
         <h2>Actions</h2>
-        <p>Select an institution on the map to start a mission.</p>
+        <p>Select an institution on the map to start a transition.</p>
       </div>
     {/if}
 

@@ -3,7 +3,7 @@
 </script>
 
 <div class="mission-view">
-    <h2>Mission: Liberate {$gameStore.institutions.find(i => i.id === $gameStore.activeMission.institutionId)?.name}</h2>
+    <h2>Transition: Liberate {$gameStore.institutions.find(i => i.id === $gameStore.activeMission.institutionId)?.name}</h2>
     
     <div class="progress-bar">
         <div class="progress" style="width: {$gameStore.activeMission.progress}%"></div>
@@ -16,7 +16,7 @@
             on:click={() => gameStore.cancelMission()}
             disabled={$gameStore.playerMoney < 20}
         >
-            Cancel Mission ($20)
+            Cancel Transition ($20)
         </button>
     </div>
 
