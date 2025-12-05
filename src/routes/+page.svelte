@@ -76,6 +76,7 @@
         <div class="upgrade">
             <h3>{upgrade.name} (${upgrade.cost})</h3>
             <p>{upgrade.description}</p>
+            <p class="upgrade-effect">{upgrade.effect}</p>
             <button 
                 on:click={() => purchaseUpgrade(upgrade.id)}
                 disabled={$gameStore.playerMoney < upgrade.cost || $gameStore.permanentUpgrades.some(u => u.id === upgrade.id)}
@@ -253,6 +254,13 @@
     border-radius: 6px;
     border: 1px solid #3e2723;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  .upgrade-effect {
+      font-size: 0.9rem;
+      font-style: italic;
+      opacity: 0.7;
+      margin-top: 0.25rem;
   }
   
   .actions {
